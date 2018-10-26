@@ -51,7 +51,13 @@ namespace $rootnamespace$.DependencyResolution {
         public IContainer Container { get; set; }
 
         public IContainer CurrentNestedContainer {
-            get {
+            get
+            {
+                if (HttpContext == null)
+                {
+                    return null;
+                }
+
                 return (IContainer)HttpContext.Items[NestedContainerKey];
             }
             set {
@@ -64,9 +70,21 @@ namespace $rootnamespace$.DependencyResolution {
         #region Properties
 
         private HttpContextBase HttpContext {
-            get {
+            get
+            {
                 var ctx = Container.TryGetInstance<HttpContextBase>();
-                return ctx ?? new HttpContextWrapper(System.Web.HttpContext.Current);
+
+                if (ctx != null)
+                {
+                    return ctx;
+                }
+
+                if (System.Web.HttpContext.Current != null)
+                {
+                    return new HttpContextWrapper(System.Web.HttpContext.Current);
+                }
+
+                return null;
             }
         }
 
